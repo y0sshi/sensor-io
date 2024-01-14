@@ -1,11 +1,14 @@
-use image::GenericImageView;
+use std::io::{BufReader, BufWriter};
+use std::fs::File;
+use byteorder::{ReadBytesExt, WriteBytesExt};
 use num_traits;
+use image::GenericImageView;
 use nalgebra;
 
-pub struct NARaw<T: num_traits::PrimInt + nalgebra::Scalar> {
+pub struct NARaw<T: num_traits::PrimInt + num_traits::FromPrimitive + nalgebra::Scalar> {
     data: nalgebra::DMatrix<T>
 }
-impl<T: num_traits::PrimInt + nalgebra::Scalar> NARaw<T> {
+impl<T: num_traits::PrimInt + num_traits::FromPrimitive + nalgebra::Scalar> NARaw<T> {
     // 画サイズ指定コンストラクタ
     pub fn new(width: usize, height: usize) -> Self {
         let data = nalgebra::DMatrix::<T>::zeros(height, width);
@@ -17,6 +20,23 @@ impl<T: num_traits::PrimInt + nalgebra::Scalar> NARaw<T> {
         let data = Self::convert_vector2d_to_dmatrix(&vec2d);
         NARaw {data}
     }
+
+    // image(bin)変換コンストラクタ
+    pub fn new_from_binimage(path_raw_in: String) -> Self {
+        let mut f_read = BufReader::new(File::open(path_raw_in).unwrap());
+
+        let width    = f_read.read_u16::<byteorder::LittleEndian>().unwrap() as usize;  // Little Endian(u16)
+        let height   = f_read.read_u16::<byteorder::LittleEndian>().unwrap() as usize;  // Little Endian(u16)
+        let mut data = nalgebra::DMatrix::<T>::zeros(height, width);
+        for y in 0 .. height {
+            for x in 0 .. width {
+                data[(y, x)] = T::from_u16(f_read.read_u16::<byteorder::LittleEndian>().unwrap()).unwrap();
+            }
+        }
+
+        NARaw {data}
+    }
+
 
     // image(RGB)変換コンストラクタ
     pub fn new_from_rgbimage(path_image_in: String) -> Self {
@@ -51,6 +71,29 @@ impl<T: num_traits::PrimInt + nalgebra::Scalar> NARaw<T> {
         self.data.nrows()
     }
 
+    // bin画像書き込み
+    pub fn write_binimage(&self, path_raw_out: String) -> &Self {
+        let mut f_write = BufWriter::new(File::create(path_raw_out).unwrap());
+
+        let width  = Self::width(&self);
+        let height = Self::height(&self);
+        let _ = f_write.write_u16::<byteorder::LittleEndian>(width  as u16);
+        let _ = f_write.write_u16::<byteorder::LittleEndian>(height as u16);
+        for y in 0 .. height {
+            for x in 0 .. width {
+                let _ = f_write.write_u16::<byteorder::LittleEndian>(self.data[(y, x)].to_u16().unwrap());
+            }
+        }
+
+        self
+    }
+
+    // bin画像読み込み
+    pub fn read_binimage(&mut self, path_raw_in: String) -> &Self {
+        *self = Self::new_from_binimage(path_raw_in);
+
+        self
+    }
     fn convert_vector2d_to_dmatrix(vec2d: &Vec<Vec<T>>) -> nalgebra::DMatrix<T> {
         nalgebra::DMatrix::<T>::from_fn(
             vec2d.len(),
@@ -133,6 +176,8 @@ mod test {
 
         *raw_in.pix(2, 1) = 30;
         println!("  [naraw][test_new_from_vector()] raw_in.data()           = \n{}", raw_in.data());
+
+        raw_in.write_binimage(String::from("write_naraw.bin"));
         
         println!("}}");
     }
