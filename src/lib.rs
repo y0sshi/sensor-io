@@ -1,6 +1,11 @@
 use num_traits;
 use image;
+
+// Raw Class with nalgebra
 use nalgebra;
 pub mod naraw;
-pub use naraw::NARaw as NARaw;
+
+// Raw Class with ndarray
+use ndarray;
+pub mod ndraw;
 
