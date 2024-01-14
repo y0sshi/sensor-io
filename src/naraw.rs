@@ -1,6 +1,6 @@
-use super::image::GenericImageView;
-use super::num_traits;
-use super::nalgebra;
+use image::GenericImageView;
+use num_traits;
+use nalgebra;
 
 pub struct NARaw<T: num_traits::PrimInt + nalgebra::Scalar> {
     data: nalgebra::DMatrix<T>
@@ -31,8 +31,8 @@ impl<T: num_traits::PrimInt + nalgebra::Scalar> NARaw<T> {
     }
 
     // pix取得
-    pub fn pix(&self, x: usize, y: usize) -> T {
-        self.data.column(x)[y]
+    pub fn pix<'a>(&'a mut self, x: usize, y: usize) -> &'a mut T {
+        &mut self.data[(y, x)]
     }
 
 
@@ -98,32 +98,43 @@ mod test {
 
     #[test]
     fn test_new() {
+        println!("naraw::test::test_new()  {{");
+
         let raw_in = NARaw::<u16>::new(3, 2);
-        println!("raw_in.width()  = {}", raw_in.width());
-        println!("raw_in.height() = {}", raw_in.height());
+        println!("  [naraw][test_new()] raw_in.width()  = {}", raw_in.width());
+        println!("  [naraw][test_new()] raw_in.height() = {}", raw_in.height());
         assert_eq!(3, raw_in.width());
         assert_eq!(2, raw_in.height());
+
+        println!("}}");
     }
 
     #[test]
     fn test_new_from_vector() {
+        println!("naraw::test::test_new_from_vector()  {{");
+
         let vec2d: Vec<Vec<u16>> = vec![
             vec![0, 1, 2, 3],
             vec![4, 5, 6, 7],
             vec![8, 9,10,11],
         ];
-        let raw_in = NARaw::<u16>::new_from_vector2d(&vec2d);
-        println!("raw_in.width()          = {}", raw_in.width());
-        println!("raw_in.height()         = {}", raw_in.height());
-        println!("raw_in.data()           = {}", raw_in.data());
-        println!("raw_in.data().row(1)    = {}", raw_in.data().row(1));
-        println!("raw_in.data().column(1) = {}", raw_in.data().column(1));
+        let mut raw_in = NARaw::<u16>::new_from_vector2d(&vec2d);
+        println!("  [naraw][test_new_from_vector()] raw_in.width()          = {}", raw_in.width());
+        println!("  [naraw][test_new_from_vector()] raw_in.height()         = {}", raw_in.height());
+        println!("  [naraw][test_new_from_vector()] raw_in.data()           = {}", raw_in.data());
+        println!("  [naraw][test_new_from_vector()] raw_in.data().row(1)    = {}", raw_in.data().row(1));
+        println!("  [naraw][test_new_from_vector()] raw_in.data().column(1) = {}", raw_in.data().column(1));
         for y in 0 .. vec2d.len() {
             for x in 0 .. vec2d[0].len() {
-                println!("vec2d[y][x]:{} == raw_in.pix(x, y):{}", vec2d[y][x], raw_in.pix(x, y));
-                assert_eq!(vec2d[y][x], raw_in.pix(x, y));
+                println!("  [naraw][test_new_from_vector()] vec2d[y][x]:{} == raw_in.pix(x, y):{}", vec2d[y][x], raw_in.pix(x, y));
+                assert_eq!(vec2d[y][x], *raw_in.pix(x, y));
             }
         }
+
+        *raw_in.pix(2, 1) = 30;
+        println!("  [naraw][test_new_from_vector()] raw_in.data()           = \n{}", raw_in.data());
+        
+        println!("}}");
     }
 }
 
