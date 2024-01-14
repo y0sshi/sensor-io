@@ -1,17 +1,14 @@
-use std::io::BufReader;
+use std::io::{BufReader, BufWriter};
 use std::fs::File;
-use byteorder::ReadBytesExt;
+use byteorder::{ReadBytesExt, WriteBytesExt};
 use num_traits;
 use image::GenericImageView;
 use ndarray;
 
-pub struct NDRaw<T: num_traits::PrimInt + num_traits::FromPrimitive> {
+pub struct NDRaw<T: num_traits::PrimInt + num_traits::FromPrimitive + num_traits::ToPrimitive> {
     data: ndarray::Array2<T>,
 }
-impl<T: num_traits::PrimInt + num_traits::FromPrimitive> NDRaw<T>
-where
-u16: std::convert::TryInto<T>,
-<u16 as std::convert::TryInto<T>>::Error: std::fmt::Debug,
+impl<T: num_traits::PrimInt + num_traits::FromPrimitive + num_traits::ToPrimitive> NDRaw<T>
 {
     // 画サイズ指定コンストラクタ
     pub fn new(width: usize, height: usize) -> Self {
@@ -28,11 +25,17 @@ u16: std::convert::TryInto<T>,
 
     // image(bin)変換コンストラクタ
     pub fn new_from_binimage(path_raw_in: String) -> Self {
-        let data = match Self::read_binimage(path_raw_in)  {
-            Ok(d)  => d,
-            Err(_) => ndarray::Array2::<T>::zeros((3, 1))
-        };
-        
+        let mut f_read = BufReader::new(File::open(path_raw_in).unwrap());
+
+        let width    = f_read.read_u16::<byteorder::LittleEndian>().unwrap() as usize;  // Little Endian(u16)
+        let height   = f_read.read_u16::<byteorder::LittleEndian>().unwrap() as usize;  // Little Endian(u16)
+        let mut data = ndarray::Array2::<T>::zeros((height, width));
+        for y in 0 .. height {
+            for x in 0 .. width {
+                data[[y, x]] = T::from_u16(f_read.read_u16::<byteorder::LittleEndian>().unwrap()).unwrap();
+            }
+        }
+
         NDRaw {data}
     }
 
@@ -68,19 +71,28 @@ u16: std::convert::TryInto<T>,
         self.data.nrows()
     }
 
-    fn read_binimage(path_raw_in: String) -> std::io::Result<ndarray::Array2<T>> {
-        let mut f_read = BufReader::new(File::open(path_raw_in)?);
+    // bin画像書き込み
+    pub fn write_binimage(&self, path_raw_out: String) -> &Self {
+        let mut f_write = BufWriter::new(File::create(path_raw_out).unwrap());
 
-        let width    = f_read.read_u16::<byteorder::LittleEndian>().unwrap() as usize;  // Little Endian(u16)
-        let height   = f_read.read_u16::<byteorder::LittleEndian>().unwrap() as usize;  // Little Endian(u16)
-        let mut data = ndarray::Array2::<T>::zeros((height, width));
+        let width  = Self::width(&self);
+        let height = Self::height(&self);
+        let _ = f_write.write_u16::<byteorder::LittleEndian>(width  as u16);
+        let _ = f_write.write_u16::<byteorder::LittleEndian>(height as u16);
         for y in 0 .. height {
             for x in 0 .. width {
-                data[[y, x]] = f_read.read_u16::<byteorder::LittleEndian>().unwrap().try_into().unwrap();
+                let _ = f_write.write_u16::<byteorder::LittleEndian>(self.data[[y, x]].to_u16().unwrap());
             }
         }
 
-        Ok(data)
+        self
+    }
+
+    // bin画像読み込み
+    pub fn read_binimage(&mut self, path_raw_in: String) -> &Self {
+        *self = Self::new_from_binimage(path_raw_in);
+
+        self
     }
 
     fn convert_vector1d_to_ndarray(vec1d: Vec<T>, width: usize, height: usize) -> ndarray::Array2<T> {
@@ -167,6 +179,7 @@ mod test {
         *raw_in.pix(2, 1)  = 20;
         println!("  [ndraw][test_new_from_vector()] raw_in.data()           = \n{}", raw_in.data());
 
+        raw_in.write_binimage(String::from("write_ndraw.bin"));
         println!("}}");
     }
 
