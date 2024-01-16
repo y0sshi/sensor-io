@@ -160,7 +160,7 @@ mod test {
         println!("ndraw::test::test_new_from_vector()  {{");
 
         let vec2d: Vec<Vec<u16>> = vec![vec![0, 1, 2, 3], vec![4, 5, 6, 7], vec![8, 9, 10, 11]];
-        let mut raw_in = NDRaw::<u16>::new_from_vector2d(vec2d);
+        let mut raw_in = NDRaw::<u16>::new_from_vector2d(&vec2d);
         println!(
             "  [ndraw][test_new_from_vector()] raw_in.width()          = {}",
             raw_in.width()
