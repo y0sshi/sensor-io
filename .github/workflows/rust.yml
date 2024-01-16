@@ -11,6 +11,8 @@ env:
 
 jobs:
   lint:
+    env:
+      CARGO_INCREMENTAL: 1
     runs-on: self-hosted
     steps:
     - uses: actions/checkout@v3
@@ -24,6 +26,8 @@ jobs:
       run: cargo clippy
 
   build:
+    env:
+      CARGO_INCREMENTAL: 1
     runs-on: self-hosted
     steps:
     - uses: actions/checkout@v3
@@ -37,6 +41,8 @@ jobs:
       run: cargo build --verbose
 
   test:
+    env:
+      CARGO_INCREMENTAL: 1
     runs-on: self-hosted
     steps:
     - uses: actions/checkout@v3
