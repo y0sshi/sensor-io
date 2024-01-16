@@ -13,12 +13,12 @@ jobs:
   lint:
     runs-on: self-hosted
     steps:
-    - uses: actions/checkout@v3
       with:
-        path: ~/caches
-        key: ${{ runner.os }}-rust-${{ hashFiles(‘target’) }}
-        restore-keys: |
-          ${{ runner.os }}-rust-
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
     - name: lint
       run: cargo clippy
 
@@ -27,10 +27,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        path: ~/caches
-        key: ${{ runner.os }}-rust-${{ hashFiles(‘target’) }}
-        restore-keys: |
-          ${{ runner.os }}-rust-
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
     - name: Build
       run: cargo build --verbose
 
@@ -39,10 +40,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        path: ~/caches
-        key: ${{ runner.os }}-rust-${{ hashFiles(‘target’) }}
-        restore-keys: |
-          ${{ runner.os }}-rust-
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
     - name: Run tests
       run: cargo test
 
