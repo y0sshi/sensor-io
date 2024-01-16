@@ -12,6 +12,7 @@ env:
 jobs:
   lint:
     runs-on: self-hosted
+    steps:
     - uses: actions/checkout@v3
     - name: lint
       run: cargo clippy
@@ -25,6 +26,7 @@ jobs:
 
   test:
     runs-on: self-hosted
+    steps:
     - uses: actions/checkout@v3
     - name: Run tests
       run: cargo test
