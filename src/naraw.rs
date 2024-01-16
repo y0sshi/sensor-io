@@ -189,4 +189,35 @@ mod test {
 
         println!("}}");
     }
+
+    #[test]
+    fn test_new_from_binimage() {
+        println!("ndraw::test::test_new_from_vector()  {{");
+
+        let raw_in = NARaw::<u16>::new_from_binimage(String::from("testdata/test.bin"));
+        println!(
+            "  [ndraw][test_new_from_binimage()] raw_in.width()  = {}",
+            raw_in.width()
+        );
+        println!(
+            "  [ndraw][test_new_from_binimage()] raw_in.height() = {}",
+            raw_in.height()
+        );
+        println!(
+            "  [ndraw][test_new_from_binimage()] raw_in.data()           = \n{}",
+            raw_in.data()
+        );
+        println!(
+            "  [ndraw][test_new_from_binimage()] raw_in.data().row(1)    = {}",
+            raw_in.data().row(1)
+        );
+        println!(
+            "  [ndraw][test_new_from_binimage()] raw_in.data().column(1) = {}",
+            raw_in.data().column(1)
+        );
+        assert_eq!(4, raw_in.width());
+        assert_eq!(3, raw_in.height());
+
+        println!("}}");
+    }
 }

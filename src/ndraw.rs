@@ -205,7 +205,7 @@ mod test {
     fn test_new_from_binimage() {
         println!("ndraw::test::test_new_from_vector()  {{");
 
-        let raw_in = NDRaw::<u16>::new_from_binimage(String::from("a.bin"));
+        let raw_in = NDRaw::<u16>::new_from_binimage(String::from("testdata/test.bin"));
         println!(
             "  [ndraw][test_new_from_binimage()] raw_in.width()  = {}",
             raw_in.width()
