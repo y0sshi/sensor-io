@@ -5,7 +5,7 @@ use num_traits;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
 pub struct NARaw<T: num_traits::PrimInt + num_traits::FromPrimitive + nalgebra::Scalar> {
     data: nalgebra::DMatrix<T>,
 }

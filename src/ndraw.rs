@@ -5,7 +5,7 @@ use num_traits;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
 pub struct NDRaw<T: num_traits::PrimInt + num_traits::FromPrimitive + num_traits::ToPrimitive> {
     data: ndarray::Array2<T>,
 }
