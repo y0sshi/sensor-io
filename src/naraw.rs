@@ -52,7 +52,10 @@ impl<T: num_traits::PrimInt + num_traits::FromPrimitive + nalgebra::Scalar> NARa
     }
 
     // pix取得
-    pub fn pix(&mut self, x: usize, y: usize) -> &mut T {
+    pub fn pix(&self, x: usize, y: usize) -> &T {
+        &self.data[(y, x)]
+    }
+    pub fn pix_mut(&mut self, x: usize, y: usize) -> &mut T {
         &mut self.data[(y, x)]
     }
 
@@ -180,7 +183,7 @@ mod test {
             }
         }
 
-        *raw_in.pix(2, 1) = 30;
+        *raw_in.pix_mut(2, 1) = 30;
         println!(
             "  [naraw][test_new_from_vector()] raw_in.data()           = \n{}",
             raw_in.data()

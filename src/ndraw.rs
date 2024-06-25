@@ -53,7 +53,10 @@ impl<T: num_traits::PrimInt + num_traits::FromPrimitive + num_traits::ToPrimitiv
     }
 
     // pix取得
-    pub fn pix(&mut self, x: usize, y: usize) -> &mut T {
+    pub fn pix(&self, x: usize, y: usize) -> &T {
+        &self.data[[y, x]]
+    }
+    pub fn pix_mut(&mut self, x: usize, y: usize) -> &mut T {
         &mut self.data[[y, x]]
     }
 
@@ -192,7 +195,7 @@ mod test {
                 assert_eq!(vec2d[y][x], *raw_in.pix(x, y));
             }
         }
-        *raw_in.pix(2, 1) = 20;
+        *raw_in.pix_mut(2, 1) = 20;
         println!(
             "  [ndraw][test_new_from_vector()] raw_in.data()           = \n{}",
             raw_in.data()
